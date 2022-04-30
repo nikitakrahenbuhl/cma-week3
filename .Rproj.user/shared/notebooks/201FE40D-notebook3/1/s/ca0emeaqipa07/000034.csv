@@ -1,0 +1,6 @@
+"0","ggplot(caro) +"
+"0","  geom_boxplot(aes(y = stepMean), outlier.shape = NA)  +"
+"0","  scale_y_continuous(limits = c(0, 20))"
+"2","Warning:"
+"2"," Removed 18 rows containing non-finite values (stat_boxplot).
+"

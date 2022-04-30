@@ -16,6 +16,7 @@ theme_set(
 Import data
 ```{r}
 caro <- read_csv("0_rawdata/caro60.csv")
+caro_original <- caro
 ```
 Our sampling interval is 1 minute - if we take a temporal window of 6 minutes we use a window size of 6 positions. Therefore that's 3 plus and 3 minus.
 
@@ -28,25 +29,43 @@ caro %>%
     nPlus1  = sqrt((E-lead(E,1))^2+(N-lead(N,1))^2), 
     nPlus2  = sqrt((E-lead(E,2))^2+(N-lead(N,2))^2),  
     nPlus3  = sqrt((E-lead(E,3))^2+(N-lead(N,3))^2)  
-) -> caro2
+) -> caro
 
-caro2 %>% 
+caro %>% 
   rowwise() %>% 
   mutate(
     stepMean = mean(c(nMinus3, nMinus2, nMinus1, nPlus1, nPlus2, nPlus3))
   ) %>% 
-  ungroup() -> caro3
+  ungroup() -> caro
 ```
+
+
+# Task 2: Specify and apply threshold *d*
+Lets explore with histogram
+```{r}
+ggplot(caro) +
+  geom_boxplot(aes(y = stepMean), outlier.shape = NA)  +
+  scale_y_continuous(limits = c(0, 20))
+
+ggplot(caro) +
+  geom_histogram(aes(stepMean), bins = 60) 
+
+summary(caro$stepMean)
+
+ggplot(caro) +
+  geom_line(aes(x=DatetimeUTC, y=stepMean)) +
+  geom_hline(yintercept = 4, color = "red")
+```
+Based on the observations I would pick d =< 4
 
 Remove static points
 ```{r}
-caro3 %>% 
+caro %>% 
   ungroup() %>% 
   mutate(static = stepMean < mean(stepMean, na.rm = TRUE)) %>% 
-  filter(!static) %>% 
-  ggplot(data = ., aes(x = E, y = N)) +
+  filter(!static) -> caro_filtered
+  ggplot(data = caro_filtered, aes(x = E, y = N)) +
     geom_path() +
     geom_point() +
     coord_fixed()
 ```
-
