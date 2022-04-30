@@ -129,3 +129,9 @@ ggplot(pd, aes(E, N, color = DatetimeUTC)) +
 summary(pd)
 ```
 # Task 6
+```{r}
+library(SimilarityMeasures)
+
+pd %>% filter(TrajID = 1) %>% as.matrix(.)
+```
+
