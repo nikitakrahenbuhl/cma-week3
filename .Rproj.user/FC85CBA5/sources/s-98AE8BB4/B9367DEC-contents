@@ -115,4 +115,17 @@ caro %>%
   coord_equal() + labs(title="Removed segments shorter than 5 minutes")
 ```
 # Task 5
+import data
+```{r}
+pd <- read_csv("0_rawdata/pedestrian.csv")
+```
 
+Explore the trajectories
+```{r}
+pd
+ggplot(pd, aes(E, N, color = DatetimeUTC)) +
+  geom_path() + geom_point() + facet_wrap(~TrajID)
+
+summary(pd)
+```
+# Task 6
