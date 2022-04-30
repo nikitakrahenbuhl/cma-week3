@@ -3,7 +3,7 @@
     "path": "~/Documents/Masters/PandT/week3/exercise3/notebook3.Rmd",
     "project_path": "notebook3.Rmd",
     "type": "r_markdown",
-    "hash": "678754139",
+    "hash": "1556625184",
     "contents": "",
     "dirty": false,
     "created": 1651324917389.0,
@@ -14,15 +14,15 @@
         "chunk_output_type": "inline",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "62,9",
-        "scrollLine": "58"
+        "cursorPosition": "117,0",
+        "scrollLine": "116"
     },
     "folds": "",
-    "lastKnownWriteTime": 1651328017,
+    "lastKnownWriteTime": 1651329314,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1651328017834,
+    "last_content_update": 1651329314839,
     "read_only": false,
     "read_only_alternatives": []
 }

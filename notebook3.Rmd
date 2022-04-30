@@ -62,10 +62,57 @@ Remove static points
 ```{r}
 caro %>% 
   ungroup() %>% 
-  mutate(static = stepMean < mean(stepMean, na.rm = TRUE)) %>% 
+  mutate(static = stepMean < mean(stepMean, na.rm = TRUE)) -> caro
+
+caro %>% 
   filter(!static) -> caro_filtered
   ggplot(data = caro_filtered, aes(x = E, y = N)) +
     geom_path() +
     geom_point() +
     coord_fixed()
 ```
+# Task 3 Visualise segmented trajectories
+```{r}
+ggplot(caro, aes(E, N)) +
+  geom_path() +
+  geom_point(aes(color = static)) +
+  coord_equal()
+```
+# Task 4: Segment based analysis
+Functions to create unique IDs
+```{r}
+rle_id <- function(vec){
+  x <- rle(vec)$lengths
+  as.factor(rep(seq_along(x), times=x))
+  }
+```
+
+Assign unique IDs to Caro
+```{r}
+caro <- caro %>%
+  mutate(segment_id = rle_id(static))
+
+caro
+```
+```{r}
+caro %>% 
+  mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units = "mins"))) %>%
+  group_by(segment_id) %>% 
+  summarise(total_time = sum(timelag)) -> segment_duration
+
+left_join(caro, segment_duration, by = "segment_id") -> caro
+```
+
+
+Makes plots
+```{r}
+caro %>% 
+  filter(!static) %>% 
+  filter(total_time >= 5) %>% 
+  ggplot(., aes(E, N, color = segment_id)) +
+  geom_path() +
+  geom_point() +
+  coord_equal() + labs(title="Removed segments shorter than 5 minutes")
+```
+# Task 5
+
