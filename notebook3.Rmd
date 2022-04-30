@@ -1,0 +1,52 @@
+---
+title: "Exercse 3"
+output: html_notebook
+---
+
+# Task 1: Segmentation
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggpubr)
+
+theme_set(
+  theme_classic()
+)
+```
+Import data
+```{r}
+caro <- read_csv("0_rawdata/caro60.csv")
+```
+Our sampling interval is 1 minute - if we take a temporal window of 6 minutes we use a window size of 6 positions. Therefore that's 3 plus and 3 minus.
+
+```{r}
+caro %>% 
+  mutate(
+    nMinus3 = sqrt((lag(E,3)-E)^2 + (lag(N,3)-N)^2),
+    nMinus2 = sqrt((lag(E,2)-E)^2+(lag(N,2)-N)^2),  
+    nMinus1 = sqrt((lag(E,1)-E)^2+(lag(N,1)-N)^2),
+    nPlus1  = sqrt((E-lead(E,1))^2+(N-lead(N,1))^2), 
+    nPlus2  = sqrt((E-lead(E,2))^2+(N-lead(N,2))^2),  
+    nPlus3  = sqrt((E-lead(E,3))^2+(N-lead(N,3))^2)  
+) -> caro2
+
+caro2 %>% 
+  rowwise() %>% 
+  mutate(
+    stepMean = mean(c(nMinus3, nMinus2, nMinus1, nPlus1, nPlus2, nPlus3))
+  ) %>% 
+  ungroup() -> caro3
+```
+
+Remove static points
+```{r}
+caro3 %>% 
+  ungroup() %>% 
+  mutate(static = stepMean < mean(stepMean, na.rm = TRUE)) %>% 
+  filter(!static) %>% 
+  ggplot(data = ., aes(x = E, y = N)) +
+    geom_path() +
+    geom_point() +
+    coord_fixed()
+```
+

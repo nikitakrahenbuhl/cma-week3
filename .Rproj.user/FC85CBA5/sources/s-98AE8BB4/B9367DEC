@@ -1,0 +1,28 @@
+{
+    "id": "B9367DEC",
+    "path": "~/Documents/Masters/PandT/week3/exercise3/notebook3.Rmd",
+    "project_path": "notebook3.Rmd",
+    "type": "r_markdown",
+    "hash": "3004541215",
+    "contents": "",
+    "dirty": false,
+    "created": 1651324917389.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "chunk_output_type": "inline",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "50,3",
+        "scrollLine": "45"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1651325979,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1651325979811,
+    "read_only": false,
+    "read_only_alternatives": []
+}
