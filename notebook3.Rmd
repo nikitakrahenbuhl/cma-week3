@@ -1,25 +1,28 @@
 ---
 title: "Exercse 3"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Task 1: Segmentation
-
+Load fun packages.
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(ggpubr)
-
+library(SimilarityMeasures)
 theme_set(
   theme_classic()
 )
 ```
-Import data
+
+Import caro data
 ```{r}
 caro <- read_csv("0_rawdata/caro60.csv")
 caro_original <- caro
 ```
+## Specify a temporal window
 Our sampling interval is 1 minute - if we take a temporal window of 6 minutes we use a window size of 6 positions. Therefore that's 3 plus and 3 minus.
-
 ```{r}
 caro %>% 
   mutate(
@@ -41,14 +44,14 @@ caro %>%
 
 
 # Task 2: Specify and apply threshold *d*
-Lets explore with histogram
+Lets explore with a boxplot, histogram and summary.
 ```{r}
 ggplot(caro) +
   geom_boxplot(aes(y = stepMean), outlier.shape = NA)  +
   scale_y_continuous(limits = c(0, 20))
 
 ggplot(caro) +
-  geom_histogram(aes(stepMean), bins = 60) 
+  geom_histogram(aes(stepMean), bins = 60) + geom_vline(xintercept = 4, color = "red")
 
 summary(caro$stepMean)
 
@@ -56,9 +59,10 @@ ggplot(caro) +
   geom_line(aes(x=DatetimeUTC, y=stepMean)) +
   geom_hline(yintercept = 4, color = "red")
 ```
-Based on the observations I would pick d =< 4
+If we assume that the animal rests more than moving a value of d =< is fitting. The line graph highlights that movement below that point largely seems to be noise.
 
-Remove static points
+## Remove static points
+Considering that a threshold value of 4 is not far off the mean (3.9) we can just use the mean.
 ```{r}
 caro %>% 
   ungroup() %>% 
@@ -87,13 +91,19 @@ rle_id <- function(vec){
   }
 ```
 
-Assign unique IDs to Caro
+Assign unique IDs to Caro and visualise all the segments.
 ```{r}
 caro <- caro %>%
   mutate(segment_id = rle_id(static))
 
+ggplot(caro, aes(E, N, color = segment_id)) +
+  geom_path() +
+  geom_point() +
+  coord_equal()
+
 caro
 ```
+Now lets calculate the duration of each segment and remove the shorter segments (< 5 minutes)
 ```{r}
 caro %>% 
   mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units = "mins"))) %>%
@@ -114,8 +124,8 @@ caro %>%
   geom_point() +
   coord_equal() + labs(title="Removed segments shorter than 5 minutes")
 ```
-# Task 5
-import data
+# Task 5: Similarity measures
+Import data
 ```{r}
 pd <- read_csv("0_rawdata/pedestrian.csv")
 ```
@@ -127,11 +137,48 @@ ggplot(pd, aes(E, N, color = DatetimeUTC)) +
   geom_path() + geom_point() + facet_wrap(~TrajID)
 
 summary(pd)
-```
-# Task 6
-```{r}
-library(SimilarityMeasures)
 
-pd %>% filter(TrajID = 1) %>% as.matrix(.)
+pd %>% 
+  group_by(TrajID) %>% 
+  summarise(n = n())
+```
+Trajectory 3 moved in reverse. Trajectory 4 has a differing shape and 5 has an outlier.
+Point density between the trajectories varies and highlights differences in speed.
+
+# Task 6: Calculate similarity
+
+First we need to get matrices!
+
+	
+An m x n matrix containing trajectory1. 
+Here m is the number of points and n is the dimension of the points.
+
+What does dimension mean?
+```{r}
+trajectories <- seq(2,5,1)
+df <- NULL
+
+for (i in trajectories) {
+  pd %>% filter(TrajID == 1) %>% select(E, N) %>%  as.matrix() -> trj_1
+  pd %>% filter(TrajID == i) %>% select(E, N) %>%  as.matrix() -> trj_2
+  DTW(trj_1, trj_2) -> dtw_value
+  EditDist(trj_1, trj_2) -> edit_dist_value
+  Frechet(trj_1, trj_2) -> frechet_value
+  LCSS(trj_1, trj_2, errorMarg = 15) -> lcss_value
+  df <- rbind(df, data.frame(i, dtw_value, edit_dist_value, frechet_value, lcss_value))
+
+}
+
+
+```
+
+Lets visualise the 3 methods
+```{r}
+df %>% 
+  rename(DTW = dtw_value, EditDist = edit_dist_value, Frechet = frechet_value, LCSS = lcss_value) %>% 
+  pivot_longer(2:5, names_to ="methods", values_to = "computed_similarities")%>% 
+  ggplot(., aes(x=as.factor(i), y=computed_similarities, fill = as.factor(i))) +
+    geom_col() + facet_wrap(~methods, scales = "free_y") + theme(legend.position="none") +
+  xlab("Trajectories") + ylab("Computed similarity scores")
 ```
 
